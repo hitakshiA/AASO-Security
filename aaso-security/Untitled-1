@@ -1,0 +1,1 @@
+Error: Can't resolve '@vscode/test-cli' in '/Users/hitakshiarora/AASO/aaso-security/.vscode-test.mjs'. Try running 'npm install @vscode/test-cli', and then 'Refresh Tests'
