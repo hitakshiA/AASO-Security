@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scan Results</title>
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        .vulnerability {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .high { border-left: 5px solid #dc3545; }
+        .medium { border-left: 5px solid #ffc107; }
+        .low { border-left: 5px solid #28a745; }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress {
+            height: 100%;
+            background-color: #007acc;
+            transition: width 0.3s ease;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="scan-controls">
+            <button id="startScan">Start Scan</button>
+            <div class="progress-bar">
+                <div class="progress" style="width: 0%"></div>
+            </div>
+        </div>
+        <div id="results"></div>
+        <div id="error" class="error-message"></div>
+    </div>
+    <script>
+        const vscode = acquireVsCodeApi();
+        
+        document.getElementById('startScan').addEventListener('click', () => {
+            vscode.postMessage({ command: 'startScan' });
+            updateProgress(0); 
+        });
+
+        window.addEventListener('message', event => {
+            const message = event.data;
+            switch (message.command) {
+                case 'updateResults':
+                    updateResults(message.results);
+                    break;
+                case 'updateProgress':
+                    updateProgress(message.progress);
+                    break;
+                case 'showError':
+                    showError(message.error);
+                    break;
+            }
+        });
+
+        function updateResults(results) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = results.map(result => `
+                <div class="vulnerability ${result.severity.toLowerCase()}">
+                    <h3>${result.type}</h3>
+                    <p>${result.description}</p>
+                    <p><strong>Location:</strong> ${result.location}</p>
+                    <p><strong>Remediation:</strong> ${result.remediation}</p>
+                </div>
+            `).join('');
+        }
+
+        function updateProgress(progress) {
+            const progressBar = document.querySelector('.progress');
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function showError(error) {
+            document.getElementById('error').textContent = `Error: ${error}`;
+        }
+    </script>
+</body>
+</html>
